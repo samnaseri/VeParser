@@ -1,6 +1,25 @@
-# Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
 bin
+Bin
 obj
-
-# mstest test results
 TestResults
+TestResult.xml
+drops
+*.VisualState.xml
+StyleCop.Cache
+*.LDF
+*~
+PrecompiledWeb
+*.suo
+*.log
+*.cache
+*.user
+*.tmp
+*.ldf
+*.mdf
+*.swx
+.dotest
+*.Publish.xml
+*.dbproj.schemaview
+_ReSharper*
+*.vs10x
+*.docstates
