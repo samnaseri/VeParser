@@ -55,7 +55,6 @@ namespace VeParser
             return anyParser(parsers);
         }
 
-
         /// <summary>
         /// A sequence of parsers is expected. The combined parser succeeds when all the parsers succeed in the sequence.
         /// </summary>

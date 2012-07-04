@@ -108,6 +108,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="vNext\0.Basics.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Ve Parser Sign Key.pfx" />
