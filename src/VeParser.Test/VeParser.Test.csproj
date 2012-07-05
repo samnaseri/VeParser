@@ -43,8 +43,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="VeParser_vNext_Tests.cs" />
+    <Compile Include="Any_tests.cs" />
+    <Compile Include="OneOrMore_tests.cs" />
+    <Compile Include="EOI_tests.cs" />
+    <Compile Include="Seq_tests.cs" />
+    <Compile Include="Token_tests.cs" />
+    <Compile Include="test helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ZeorOrMore_tests.cs" />
+    <Compile Include="ZeroOrOne_tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VeParser\VeParser.csproj">

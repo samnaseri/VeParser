@@ -146,5 +146,39 @@ namespace VeParser_vNext
                     return new ParseOutput<TToken>(current.Input, current.Position, true);
                 };
         }
+        public static Parser<TToken> ZeroOrOne<TToken>(Parser<TToken> parser)
+        {
+            return input =>
+                {
+                    var output = parser(input);
+                    if (output.Success)
+                        return new ParseOutput<TToken>(output.Input, output.Position, true);
+                    else
+                        return new ParseOutput<TToken>(input.Input, input.Position, true);
+                };
+        }
+        public static Parser<TToken> OneOrMore<TToken>(Parser<TToken> parser)
+        {
+            return input =>
+                {
+                    var current = input;
+                    var output = parser(input);
+                    if (!output.Success)
+                        return new ParseOutput<TToken>(input.Input, input.Position, false);
+                    else
+                        current = new ParseInput<TToken>(output.Input, output.Position);
+
+                    while (true)
+                    {
+                        output = parser(current);
+                        if (!output.Success)
+                            break;
+                        current = new ParseInput<TToken>(output.Input, output.Position);
+                        if (EOI<TToken>()(current).Success) // if reached to the end of input stream
+                            break;
+                    }
+                    return new ParseOutput<TToken>(current.Input, current.Position, true);
+                };
+        }
     }
 }
