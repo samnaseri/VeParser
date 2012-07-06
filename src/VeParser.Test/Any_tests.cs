@@ -12,6 +12,7 @@ namespace VeParser.Test
             var input = "1";
             var parser = V.Any(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
+            Assert.AreEqual('1', output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(1, output.Position);
         }
@@ -21,6 +22,7 @@ namespace VeParser.Test
             var input = "2";
             var parser = V.Any(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
+            Assert.AreEqual('2', output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(1, output.Position);
         }
@@ -30,6 +32,7 @@ namespace VeParser.Test
             var input = "3";
             var parser = V.Any(V.Token('1'), V.Token('2'), V.Token('3'), V.Token('4'));
             var output = runParser(parser, input);
+            Assert.AreEqual('3', output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(1, output.Position);
         }
@@ -39,6 +42,7 @@ namespace VeParser.Test
             var input = "2";
             var parser = V.Any(V.Token('1'), V.Token('2'), V.Token('2'), V.Token('4'));
             var output = runParser(parser, input);
+            Assert.AreEqual('2', output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(1, output.Position);
         }
@@ -48,6 +52,7 @@ namespace VeParser.Test
             var input = "3";
             var parser = V.Any(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
+            Assert.AreEqual(null, output.Result);
             Assert.False(output.Success);
             Assert.AreEqual(0, output.Position);
         }
@@ -57,6 +62,7 @@ namespace VeParser.Test
             var input = "ab";
             var parser = V.Any(V.Seq(V.Token('c'), V.Token('d')), V.Seq(V.Token('a'), V.Token('b')));
             var output = runParser(parser, input);
+            Assert.AreEqual(new[] { 'a', 'b' }, output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(2, output.Position);
         }
@@ -66,6 +72,7 @@ namespace VeParser.Test
             var input = "ab";
             var parser = V.Any(V.Seq(V.Token('a'), V.Token('d')), V.Seq(V.Token('a'), V.Token('b')));
             var output = runParser(parser, input);
+            Assert.AreEqual(new[] { 'a', 'b' }, output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(2, output.Position);
         }
@@ -75,6 +82,7 @@ namespace VeParser.Test
             var input = "eg";
             var parser = V.Any(V.Seq(V.Token('c'), V.Token('d')), V.Seq(V.Token('a'), V.Token('b')));
             var output = runParser(parser, input);
+            Assert.AreEqual(null, output.Result);
             Assert.False(output.Success);
             Assert.AreEqual(0, output.Position);
         }

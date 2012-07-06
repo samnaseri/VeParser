@@ -109,6 +109,8 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="vNext\0.Basics.cs" />
+    <Compile Include="vNext\ParserExensions.cs" />
+    <Compile Include="vNext\ReflectionHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Ve Parser Sign Key.pfx" />

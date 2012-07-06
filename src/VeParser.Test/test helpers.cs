@@ -4,14 +4,10 @@ namespace VeParser.Test
 {
     public class VeParserTests
     {
-        protected Parser<char> getParserExpectingAn_O()
-        {
-            return V.Token('O');
-        }
         protected ParseOutput<char> runParser(Parser<char> parser, string input)
         {
             var inputReader = new SimpleCharReader(input);
-            return parser(new ParseInput<char>(inputReader));
+            return parser.Run(new ParseInput<char>(inputReader));
         }
     }
 

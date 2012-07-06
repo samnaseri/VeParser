@@ -12,6 +12,7 @@ namespace VeParser.Test
             var input = "12";
             var parser = V.Seq(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
+            Assert.AreEqual(new[] { '1', '2' }, output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(2, output.Position);
         }
@@ -21,6 +22,7 @@ namespace VeParser.Test
             var input = "21";
             var parser = V.Seq(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
+            Assert.AreEqual(null, output.Result);
             Assert.False(output.Success);
             Assert.AreEqual(0, output.Position);
         }

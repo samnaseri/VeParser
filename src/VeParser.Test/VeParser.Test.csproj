@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Any_tests.cs" />
+    <Compile Include="If_tests.cs" />
     <Compile Include="OneOrMore_tests.cs" />
     <Compile Include="EOI_tests.cs" />
     <Compile Include="Seq_tests.cs" />

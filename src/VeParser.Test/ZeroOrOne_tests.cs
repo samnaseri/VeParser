@@ -12,6 +12,7 @@ namespace VeParser.Test
             var input = "x";
             var parser = V.ZeroOrMore(V.Token('a'));
             var output = runParser(parser, input);
+            Assert.AreEqual(new char[] { }, output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(0, output.Position);
         }
@@ -21,6 +22,7 @@ namespace VeParser.Test
             var input = "a";
             var parser = V.ZeroOrMore(V.Token('a'));
             var output = runParser(parser, input);
+            Assert.AreEqual(new char[] { 'a' }, output.Result);
             Assert.True(output.Success);
             Assert.AreEqual(1, output.Position);
         }

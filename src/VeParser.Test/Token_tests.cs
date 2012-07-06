@@ -6,6 +6,10 @@ namespace VeParser.Test
     [TestFixture]
     public class Token_tests : VeParserTests
     {
+        protected Parser<char> getParserExpectingAn_O()
+        {
+            return V.Token('O');
+        }
         [Test]
         public void V_Token_should_proceed_if_input_is_matched()
         {
@@ -13,6 +17,7 @@ namespace VeParser.Test
             var parser = getParserExpectingAn_O();
             var output = runParser(parser, inputText);
             Assert.True(output.Success);
+            Assert.AreEqual('O', output.Result);
             Assert.AreEqual(1, output.Position);
         }
         [Test]
@@ -22,6 +27,7 @@ namespace VeParser.Test
             var parser = getParserExpectingAn_O();
             var output = runParser(parser, inputText);
             Assert.False(output.Success);
+            Assert.AreEqual(null, output.Result);
             Assert.AreEqual(0, output.Position);
         }
     }
