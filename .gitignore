@@ -17,9 +17,13 @@ PrecompiledWeb
 *.ldf
 *.mdf
 *.swx
+*.exclude
 .dotest
 *.Publish.xml
 *.dbproj.schemaview
 _ReSharper*
 *.vs10x
 *.docstates
+setup/debug
+setup/release
+Thumbs.db
