@@ -89,7 +89,6 @@ namespace VeParser_vNext
 #else
         public dynamic Result { get; private set; }
 #endif
-
     }
     public class Parser<TToken>
     {
@@ -113,14 +112,30 @@ namespace VeParser_vNext
     public delegate ParseOutput<TToken> ParserHandler<TToken>(ParseInput<TToken> input);
     public class V
     {
+        private static ParseOutput<TToken> ToSuccess<TToken>(ParseInput<TToken> input, bool nextPosition, object result)
+        {
+            return new ParseOutput<TToken>(input.Input, input.Position + (nextPosition ? 1 : 0), true, result);
+        }
+        private static ParseOutput<TToken> ToFail<TToken>(ParseInput<TToken> input)
+        {
+            return new ParseOutput<TToken>(input.Input, input.Position, false);
+        }
+        private static ParseOutput<TToken> Clone<TToken>(ParseOutput<TToken> output)
+        {
+            return new ParseOutput<TToken>(output.Input, output.Position, output.Success, output.Result);
+        }
+        private static ParseInput<TToken> Continue<TToken>(ParseOutput<TToken> output)
+        {
+            return new ParseInput<TToken>(output.Input, output.Position);
+        }
         private static Parser<TToken> ProceedIf<TToken>(bool condition, Func<object> resultProvider)
         {
             return new Parser<TToken>(input =>
             {
                 if (condition)
-                    return new ParseOutput<TToken>(input.Input, input.Position + 1, true, resultProvider());
+                    return ToSuccess(input, true, resultProvider());
                 else
-                    return new ParseOutput<TToken>(input.Input, input.Position, false);
+                    return ToFail(input);
             });
         }
         private static Parser<TToken> ProceedIf<TToken>(Func<bool> condition, Func<object> resultProvider)
@@ -129,9 +144,9 @@ namespace VeParser_vNext
                 {
                     var success = condition();
                     if (success)
-                        return new ParseOutput<TToken>(input.Input, input.Position + 1, true, resultProvider());
+                        return ToSuccess(input, true, resultProvider());
                     else
-                        return new ParseOutput<TToken>(input.Input, input.Position, false);
+                        return ToFail(input);
                 });
         }
         private static Parser<TToken> ProceedIf<TToken>(Func<TToken, bool> condition, Func<TToken, object> resultProvider)
@@ -140,9 +155,9 @@ namespace VeParser_vNext
                 {
                     var current = input.Current;
                     if (condition(current))
-                        return new ParseOutput<TToken>(input.Input, input.Position + 1, true, resultProvider(current));
+                        return ToSuccess(input, true, resultProvider(current));
                     else
-                        return new ParseOutput<TToken>(input.Input, input.Position, false);
+                        return ToFail(input);
                 });
         }
         public static Parser<TToken> Token<TToken>(TToken expectedToken)
@@ -163,11 +178,11 @@ namespace VeParser_vNext
                     {
                         var output = parser.Run(current);
                         if (!output.Success)
-                            return new ParseOutput<TToken>(input.Input, input.Position, false);
+                            return ToFail(input);
                         results.Add(output.Result);
                         current = new ParseInput<TToken>(output.Input, output.Position);
                     }
-                    return new ParseOutput<TToken>(current.Input, current.Position, true, results.AsReadOnly());
+                    return ToSuccess(current, false, results.AsReadOnly());
                 });
         }
         public static Parser<TToken> Any<TToken>(params Parser<TToken>[] parsers)
@@ -180,10 +195,10 @@ namespace VeParser_vNext
                         var output = parser.Run(input);
                         if (output.Success)
                         {
-                            return new ParseOutput<TToken>(output.Input, output.Position, true, output.Result);
+                            return Clone(output);
                         }
                     }
-                    return new ParseOutput<TToken>(input.Input, input.Position, false);
+                    return ToFail(input);
                 });
         }
         public static Parser<TToken> ZeroOrMore<TToken>(Parser<TToken> parser)
@@ -198,11 +213,11 @@ namespace VeParser_vNext
                         if (!output.Success)
                             break;
                         results.Add(output.Result);
-                        current = new ParseInput<TToken>(output.Input, output.Position);
+                        current = Continue(output);
                         if (EOI<TToken>().Run(current).Success) // if reached to the end of input stream
                             break;
                     }
-                    return new ParseOutput<TToken>(current.Input, current.Position, true, results.AsReadOnly());
+                    return ToSuccess(current, false, results.AsReadOnly());
                 });
         }
         public static Parser<TToken> ZeroOrOne<TToken>(Parser<TToken> parser)
@@ -211,9 +226,9 @@ namespace VeParser_vNext
                 {
                     var output = parser.Run(input);
                     if (output.Success)
-                        return new ParseOutput<TToken>(output.Input, output.Position, true, output.Result);
+                        return Clone(output);
                     else
-                        return new ParseOutput<TToken>(input.Input, input.Position, true, null);
+                        return ToSuccess(input, false, null);
                 });
         }
         public static Parser<TToken> OneOrMore<TToken>(Parser<TToken> parser)
@@ -224,9 +239,9 @@ namespace VeParser_vNext
                     var results = new List<object>();
                     var output = parser.Run(input);
                     if (!output.Success)
-                        return new ParseOutput<TToken>(input.Input, input.Position, false);
+                        return ToFail(input);
                     else
-                        current = new ParseInput<TToken>(output.Input, output.Position);
+                        current = Continue(output);
 
                     results.Add(output.Result);
 
@@ -236,11 +251,11 @@ namespace VeParser_vNext
                         if (!output.Success)
                             break;
                         results.Add(output.Result);
-                        current = new ParseInput<TToken>(output.Input, output.Position);
+                        current = Continue(output);
                         if (EOI<TToken>().Run(current).Success) // if reached to the end of input stream
                             break;
                     }
-                    return new ParseOutput<TToken>(current.Input, current.Position, true, results.AsReadOnly());
+                    return ToSuccess(current, false, results.AsReadOnly());
                 });
         }
     }
