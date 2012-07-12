@@ -28,15 +28,19 @@ namespace VeParser.Test
         {
             var ws = V.ZeroOrMore<char>(" ");
             var Identitifer = V.OneOrMore<char>("a");
-            var classParser = new Class
+
+            var classParser = V.Scope(
+                new
                 {
                     ElementType = "Class",
                     ClassName = Identitifer,
-                    Members = V.ZeroOrMore(V.Any(
-                        new Member { Type = "Auto Property" }.If(p => V.Seq<char>(ws, "public", ws, Identitifer, ws, Identitifer, ws, "{", ws, "get;", ws, "set;", ws, "}")),
-                        new Member { Type = "Field" }.If(p => V.Seq<char>(ws, Identitifer, ws, Identitifer, ";"))
-                    )),
-                }.If(m => V.Seq("class", ws, m.ClassName, ws, "{", ws, m.Members, ws, "}", ws));
+                    Members = V.ZeroOrMore(
+                                    V.Any(
+                                        V.Scope(new Member { Type = "Auto Property" }, p => V.Seq<char>(ws, "public", ws, Identitifer, ws, Identitifer, ws, "{", ws, "get;", ws, "set;", ws, "}")),
+                                        V.Scope(new { Type = "Field" }, p => V.Seq<char>(ws, Identitifer, ws, Identitifer, ";"))
+                                    )),
+                },
+                m => V.Seq("class", ws, m.ClassName, ws, "{", ws, m.Members, ws, "}", ws));
 
             var input = "class aaaa { public aa  aa {get; set; } }";
             var output = classParser.Run(new ParseInput<char>(new SimpleCharReader(input)));

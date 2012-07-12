@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -24,7 +23,15 @@ namespace VeParser_vNext
             foreach (var item in newValues)
             {
                 var property = type.GetProperty(item.Key);
-                property.SetValue(obj, item.Value, new object[] { });
+                if (property.GetSetMethod() != null)
+                    property.SetValue(obj, item.Value, new object[] { });
+                else
+                {
+                    var fieldName = string.Format("<{0}>i__Field", property.Name);
+                    var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (field != null)
+                        field.SetValue(obj, item.Value);
+                }
             }
         }
     }

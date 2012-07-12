@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -257,6 +258,45 @@ namespace VeParser_vNext
                     }
                     return ToSuccess(current, false, results.AsReadOnly());
                 });
+        }
+        public static Parser<TToken> Scope<TToken, TParsers>(TParsers resultParsers, Func<TParsers, Parser<TToken>> combinator)
+        {
+            return new Parser<TToken>(input =>
+            {
+                var properties = resultParsers.AsDictionary<object>();
+                var resultsDictionary = (from p in properties
+                                         where !(p.Value is Parser<TToken>)
+                                         select new { Name = p.Key, Value = p.Value })
+                                        .ToDictionary(i => i.Name, i => i.Value);
+                var injectedParsersDictionary = (from p in properties
+                                                 where p.Value is Parser<TToken>
+                                                 select new
+                                                 {
+                                                     Name = p.Key,
+                                                     Value = new Parser<TToken>(pInput =>
+                                                     {
+                                                         var pOutout = ((Parser<TToken>)p.Value).Run(pInput);
+                                                         if (resultsDictionary.ContainsKey(p.Key))
+                                                         {
+                                                             var list = resultsDictionary[p.Key] as IList;
+                                                             if (list == null)
+                                                                 list = new ArrayList();
+                                                             list.Add(pOutout.Result);
+                                                         }
+                                                         else
+                                                             resultsDictionary[p.Key] = pOutout.Result;
+                                                         return pOutout;
+                                                     })
+                                                 }).ToDictionary(i => i.Name, i => i.Value);
+                resultParsers.FromDictionary(injectedParsersDictionary);
+
+                var output = combinator(resultParsers).Run(input);
+                if (output.Success)
+                {
+                    return new ParseOutput<TToken>(output.Input, output.Position, true, resultsDictionary);
+                }
+                return output;
+            });
         }
     }
 }
