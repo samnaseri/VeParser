@@ -73,8 +73,8 @@ namespace VeParser_vNext
     }
     public class Parser<TToken>
     {
-        ParserMethod<TToken> parseHandler;
-        public Parser(ParserMethod<TToken> parseHandler)
+        ParserHandler<TToken> parseHandler;
+        public Parser(ParserHandler<TToken> parseHandler)
         {
             this.parseHandler = parseHandler;
         }
@@ -90,7 +90,7 @@ namespace VeParser_vNext
                 throw new NotImplementedException("This method only works when TToken is char.");
         }
     }
-    public delegate ParseOutput<TToken> ParserMethod<TToken>(ParseInput<TToken> input);
+    public delegate ParseOutput<TToken> ParserHandler<TToken>(ParseInput<TToken> input);
     public class V
     {
         private static Parser<TToken> ProceedIf<TToken>(bool condition, Func<object> resultProvider)
