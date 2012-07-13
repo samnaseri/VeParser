@@ -181,7 +181,7 @@ namespace VeParser_vNext
                         if (!output.Success)
                             return ToFail(input);
                         results.Add(output.Result);
-                        current = new ParseInput<TToken>(output.Input, output.Position);
+                        current = Continue(output);
                     }
                     return ToSuccess(current, false, results.AsReadOnly());
                 });
@@ -296,6 +296,40 @@ namespace VeParser_vNext
                     return new ParseOutput<TToken>(output.Input, output.Position, true, resultsDictionary);
                 }
                 return output;
+            });
+        }
+        public static Parser<TToken> Not<TToken>(Parser<TToken> parser)
+        {
+            return new Parser<TToken>(input =>
+                {
+                    var output = parser.Run(input);
+                    if (output.Success)
+                        return ToFail(input);
+                    else
+                        return ToSuccess(input, false, null);
+                });
+        }
+        public static Parser<TToken> DelimitedList<TToken>(Parser<TToken> listItem, Parser<TToken> delimiter, bool acceptEmptyList)
+        {
+            return new Parser<TToken>(input =>
+            {
+                var current = input;
+                var results = new List<object>();
+
+                while (true)
+                {
+                    var output = listItem.Run(current);
+                    if (!output.Success)
+                        return (results.Count == 0 && acceptEmptyList) ? ToSuccess(input, false, null) : ToFail(input);
+                    results.Add(output.Result);
+                    current = new ParseInput<TToken>(output.Input, output.Position);
+
+                    var delimiterOutput = delimiter.Run(current);
+                    if (!delimiterOutput.Success)
+                        break;
+                    current = Continue(delimiterOutput);
+                }
+                return ToSuccess(current, false, results.AsReadOnly());
             });
         }
     }
