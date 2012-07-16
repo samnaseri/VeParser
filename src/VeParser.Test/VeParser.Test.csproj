@@ -44,9 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Any_tests.cs" />
+    <Compile Include="C_tests.cs" />
     <Compile Include="DelimitedList_tests.cs" />
     <Compile Include="If_tests.cs" />
-    <Compile Include="ImpilicitStringToParser_tests.cs" />
+    <Compile Include="ImplicitStringToParser_tests.cs" />
     <Compile Include="ImplicitFuncToParser_tests.cs" />
     <Compile Include="OneOrMore_tests.cs" />
     <Compile Include="EOI_tests.cs" />
