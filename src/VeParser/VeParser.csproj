@@ -61,60 +61,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="0. interfaces.cs" />
-    <Compile Include="1.0 BaseParser.Fundumentals.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="1.1 BaseParser.Extension Points.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="1.2 BaseParser.Operatoinal Combinators.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="1.2.2 BaseParser.Helper Combinators.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="1.3 BaseParser.Circular Reference Support.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="1.4 BaseParser.Output Generation.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="1.5 BaseParser.Final.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="2. CharParsers.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Samples\3. Lexer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Samples\4. TokenParser.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="other\Exceptions.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="other\ExtensionMethods.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="other\ISourceNavigator.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="other\ParserModel.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="other\SourceReader.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="1.0 BaseParser.Fundumentals.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="vNext\0.Basics.cs" />
-    <Compile Include="vNext\ParserExensions.cs" />
-    <Compile Include="vNext\ReflectionHelper.cs" />
+    <Compile Include="IInput.cs" />
+    <Compile Include="ParseInput.cs" />
+    <Compile Include="ParseOutput.cs" />
+    <Compile Include="Parser.cs" />
+    <Compile Include="ParserExensions.cs" />
+    <Compile Include="ParserHandler.cs" />
+    <Compile Include="ParseState.cs" />
+    <Compile Include="ReflectionHelper.cs" />
+    <Compile Include="V.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Ve Parser Sign Key.pfx" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

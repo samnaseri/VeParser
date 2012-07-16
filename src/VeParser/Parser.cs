@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace VeParser_vNext
@@ -16,7 +14,7 @@ namespace VeParser_vNext
         {
             return parseHandler(input);
         }
-        public static Parser<TToken> op_Implicit(string value)
+        public static implicit operator Parser<TToken>(string value)
         {
             if (typeof(TToken) == typeof(char))
                 return V.Seq<TToken>(value.ToCharArray().Select(c => V.Token((TToken)((object)c))).ToArray());
