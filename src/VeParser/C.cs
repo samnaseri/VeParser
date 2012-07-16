@@ -14,5 +14,11 @@ namespace VeParser
         public static Parser<char> Punctuation = (Parser<char>)(c => char.IsPunctuation(c));
         public static Parser<char> Separator = (Parser<char>)(c => char.IsSeparator(c));
         public static Parser<char> Symbol = (Parser<char>)(c => char.IsSymbol(c));
+        public static MultipleParserCombinator<char> Any = V.Any;
+        public static MultipleParserCombinator<char> Seq = V.Seq;
+        public static ParserCombinator<char> ZeroOrMore = V.ZeroOrMore;
+        public static ParserCombinator<char> ZeroOrOne = V.ZeroOrOne;
+        public static ParserCombinator<char> OneOrMore = V.OneOrMore;
+        public static ParserCombinator<char> Not = V.Not;
     }
 }

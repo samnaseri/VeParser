@@ -49,6 +49,7 @@
     <Compile Include="If_tests.cs" />
     <Compile Include="ImplicitStringToParser_tests.cs" />
     <Compile Include="ImplicitFuncToParser_tests.cs" />
+    <Compile Include="LocalAssignment_tests.cs" />
     <Compile Include="OneOrMore_tests.cs" />
     <Compile Include="EOI_tests.cs" />
     <Compile Include="Seq_tests.cs" />
