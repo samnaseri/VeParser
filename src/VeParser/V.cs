@@ -7,23 +7,23 @@ namespace VeParser_vNext
 {
     public class V
     {
-        private static ParseOutput<TToken> ToSuccess<TToken>(ParseInput<TToken> input, bool nextPosition, object result)
+        internal static ParseOutput<TToken> ToSuccess<TToken>(ParseInput<TToken> input, bool nextPosition, object result)
         {
             return new ParseOutput<TToken>(input.Input, input.Position + (nextPosition ? 1 : 0), true, result);
         }
-        private static ParseOutput<TToken> ToFail<TToken>(ParseInput<TToken> input)
+        internal static ParseOutput<TToken> ToFail<TToken>(ParseInput<TToken> input)
         {
             return new ParseOutput<TToken>(input.Input, input.Position, false);
         }
-        private static ParseOutput<TToken> Clone<TToken>(ParseOutput<TToken> output)
+        internal static ParseOutput<TToken> Clone<TToken>(ParseOutput<TToken> output)
         {
             return new ParseOutput<TToken>(output.Input, output.Position, output.Success, output.Result);
         }
-        private static ParseInput<TToken> Continue<TToken>(ParseOutput<TToken> output)
+        internal static ParseInput<TToken> Continue<TToken>(ParseOutput<TToken> output)
         {
             return new ParseInput<TToken>(output.Input, output.Position);
         }
-        private static Parser<TToken> ProceedIf<TToken>(bool condition, Func<object> resultProvider)
+        internal static Parser<TToken> ProceedIf<TToken>(bool condition, Func<object> resultProvider)
         {
             return new Parser<TToken>(input =>
             {
@@ -33,7 +33,7 @@ namespace VeParser_vNext
                     return ToFail(input);
             });
         }
-        private static Parser<TToken> ProceedIf<TToken>(Func<bool> condition, Func<object> resultProvider)
+        internal static Parser<TToken> ProceedIf<TToken>(Func<bool> condition, Func<object> resultProvider)
         {
             return new Parser<TToken>(input =>
             {
@@ -44,7 +44,7 @@ namespace VeParser_vNext
                     return ToFail(input);
             });
         }
-        private static Parser<TToken> ProceedIf<TToken>(Func<TToken, bool> condition, Func<TToken, object> resultProvider)
+        internal static Parser<TToken> ProceedIf<TToken>(Func<TToken, bool> condition, Func<TToken, object> resultProvider)
         {
             return new Parser<TToken>(input =>
             {

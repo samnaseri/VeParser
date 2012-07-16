@@ -61,7 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="1.0 BaseParser.Fundumentals.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IInput.cs" />
     <Compile Include="ParseInput.cs" />
