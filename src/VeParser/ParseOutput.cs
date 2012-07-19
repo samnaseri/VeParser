@@ -1,26 +1,34 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace VeParser_vNext
+namespace VeParser
 {
-    public class ParseOutput<TToken> : ParseState<TToken>
+    public class ParseOutput<TToken>
     {
-        private bool success;
-        public ParseOutput(IInput<TToken> sourceInput, int position, bool success, dynamic result = null)
-            : base(sourceInput, position)
+        private ushort position;
+        private object result;
+
+        public ParseOutput(ushort position, object result)
         {
-            this.success = success;
-            this.Result = result;
+            this.position = position;
+            this.result = result;
         }
-        public bool Success
+        public ParseOutput(ushort position)
+        {
+            this.position = position;
+            this.result = null;
+        }
+
+        public ushort Position
         {
             get
             {
-                return success;
+                return position;
+            }
+            set
+            {
+                position = value;
             }
         }
-        public dynamic Result { get; private set; }
+        public object Result { get { return result; } }
+
     }
 }

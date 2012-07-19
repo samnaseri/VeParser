@@ -1,4 +1,5 @@
-using VeParser_vNext;
+using System;
+using System.Linq;
 
 namespace VeParser.Test
 {
@@ -7,24 +8,26 @@ namespace VeParser.Test
         protected ParseOutput<char> runParser(Parser<char> parser, string input)
         {
             var inputReader = new SimpleCharReader(input);
-            return parser.Run(new ParseInput<char>(inputReader));
+            return parser.Run(new ParseContext<char>(inputReader), 0);
         }
     }
 
+    [Serializable]
     class SimpleCharReader : IInput<char>
     {
         string input;
-        int length = 0;
+        ushort length = 0;
+        char[] chars;
         public SimpleCharReader(string input)
         {
+            chars = input.ToCharArray();
+            chars = chars.Concat(new[] { default(char) }).ToArray();
             this.input = input;
-            this.length = input.Length;
+            this.length = (ushort)input.Length;
         }
-        public char GetTokenAtPosition(int position)
+        public char GetTokenAtPosition(ushort position)
         {
-            if (position >= length)
-                return default(char);
-            return input[position];
+            return chars[position];
         }
     }
 }

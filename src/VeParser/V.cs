@@ -1,63 +1,28 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace VeParser_vNext
+namespace VeParser
 {
-    public class V
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    /// <summary>
+    /// Define a set of parsing operators.
+    /// </summary>
+    public static class V
     {
-        internal static ParseOutput<TToken> ToSuccess<TToken>(ParseInput<TToken> input, bool nextPosition, object result)
+        internal static Parser<TToken> ProceedIf<TToken>(Func<TToken, bool> condition)
         {
-            return new ParseOutput<TToken>(input.Input, input.Position + (nextPosition ? 1 : 0), true, result);
-        }
-        internal static ParseOutput<TToken> ToFail<TToken>(ParseInput<TToken> input)
-        {
-            return new ParseOutput<TToken>(input.Input, input.Position, false);
-        }
-        internal static ParseOutput<TToken> Clone<TToken>(ParseOutput<TToken> output)
-        {
-            return new ParseOutput<TToken>(output.Input, output.Position, output.Success, output.Result);
-        }
-        internal static ParseInput<TToken> Continue<TToken>(ParseOutput<TToken> output)
-        {
-            return new ParseInput<TToken>(output.Input, output.Position);
-        }
-        internal static Parser<TToken> ProceedIf<TToken>(bool condition, Func<object> resultProvider)
-        {
-            return new Parser<TToken>(input =>
+            return new Parser<TToken>((context, position) =>
             {
-                if (condition)
-                    return ToSuccess(input, true, resultProvider());
-                else
-                    return ToFail(input);
-            });
-        }
-        internal static Parser<TToken> ProceedIf<TToken>(Func<bool> condition, Func<object> resultProvider)
-        {
-            return new Parser<TToken>(input =>
-            {
-                var success = condition();
-                if (success)
-                    return ToSuccess(input, true, resultProvider());
-                else
-                    return ToFail(input);
-            });
-        }
-        internal static Parser<TToken> ProceedIf<TToken>(Func<TToken, bool> condition, Func<TToken, object> resultProvider)
-        {
-            return new Parser<TToken>(input =>
-            {
-                var current = input.Current;
+                var current = context.Current(position);
                 if (condition(current))
-                    return ToSuccess(input, true, resultProvider(current));
+                    return new ParseOutput<TToken>((ushort)(position + 1), current);
                 else
-                    return ToFail(input);
+                    return null;
             });
         }
         public static Parser<TToken> Token<TToken>(TToken expectedToken)
         {
-            return ProceedIf<TToken>(currentToken => Comparer<TToken>.Default.Compare(currentToken, expectedToken) == 0, token => token);
+            return new TokenParser<TToken>(expectedToken);
         }
         public static Parser<TToken> EOI<TToken>()
         {
@@ -65,155 +30,211 @@ namespace VeParser_vNext
         }
         public static Parser<TToken> Seq<TToken>(params Parser<TToken>[] parsers)
         {
-            return new Parser<TToken>(input =>
-            {
-                var current = input;
-                var results = new List<object>();
-                foreach (var parser in parsers)
-                {
-                    var output = parser.Run(current);
-                    if (!output.Success)
-                        return ToFail(input);
-                    results.Add(output.Result);
-                    current = Continue(output);
-                }
-                return ToSuccess(current, false, results.AsReadOnly());
-            });
+            return new SeqParser<TToken>(parsers);
         }
         public static Parser<TToken> Any<TToken>(params Parser<TToken>[] parsers)
         {
-            return new Parser<TToken>(input =>
+            return new AnyParser<TToken>(parsers);
+        }
+        public static Parser<TToken> PAny<TToken>(params Parser<TToken>[] parsers)
+        {
+            var handlers = parsers.Select(p => p.parseHandler).ToArray();
+            return new Parser<TToken>((context, position) =>
             {
-                var current = input;
-                foreach (var parser in parsers)
-                {
-                    var output = parser.Run(input);
-                    if (output.Success)
-                        return Clone(output);
-                }
-                return ToFail(input);
+                return handlers.AsParallel().Select(handler => handler(context, position)).FirstOrDefault(i => i != null);
             });
         }
         public static Parser<TToken> ZeroOrMore<TToken>(Parser<TToken> parser)
         {
-            return new Parser<TToken>(input =>
+            if (parser == null)
+                throw new ArgumentNullException("parser");
+            var handler = parser.parseHandler;
+            return new Parser<TToken>((context, position) =>
             {
-                var current = input;
+                var currentPosition = position;
                 var results = new List<object>();
                 while (true)
                 {
-                    var output = parser.Run(current);
-                    if (!output.Success)
+                    var output = handler(context, currentPosition);
+                    if (output == null)
                         break;
                     results.Add(output.Result);
-                    current = Continue(output);
-                    if (EOI<TToken>().Run(current).Success)
-                        // if reached to the end of input stream
+                    currentPosition = output.Position;
+                    if (Object.Equals(context.Current(currentPosition), default(TToken)))// if reached to the end of input stream                        
                         break;
                 }
-                return ToSuccess(current, false, results.AsReadOnly());
+                return new ParseOutput<TToken>(currentPosition, results);
             });
         }
         public static Parser<TToken> ZeroOrOne<TToken>(Parser<TToken> parser)
         {
-            return new Parser<TToken>(input =>
+            if (parser == null)
+                throw new ArgumentNullException("parser");
+            var handler = parser.parseHandler;
+            return new Parser<TToken>((context, position) =>
             {
-                var output = parser.Run(input);
-                if (output.Success)
-                    return Clone(output);
+                var output = handler(context, position);
+                if (output != null)
+                    return output;
                 else
-                    return ToSuccess(input, false, null);
+                    return new ParseOutput<TToken>(position, null);
             });
         }
         public static Parser<TToken> OneOrMore<TToken>(Parser<TToken> parser)
         {
-            return new Parser<TToken>(input =>
+            if (parser == null)
+                throw new ArgumentNullException("parser");
+            var handler = parser.parseHandler;
+            return new Parser<TToken>((context, position) =>
             {
-                var current = input;
+                var currentPosition = position;
                 var results = new List<object>();
-                var output = parser.Run(input);
-                if (!output.Success)
-                    return ToFail(input);
+                var output = handler(context, position);
+                if (output == null)
+                    return null;
                 else
-                    current = Continue(output);
+                    currentPosition = output.Position;
                 results.Add(output.Result);
                 while (true)
                 {
-                    output = parser.Run(current);
-                    if (!output.Success)
+                    output = handler(context, currentPosition);
+                    if (output == null)
                         break;
                     results.Add(output.Result);
-                    current = Continue(output);
-                    if (EOI<TToken>().Run(current).Success)
-                        // if reached to the end of input stream
+                    currentPosition = output.Position;
+                    if (context.Current(currentPosition) == null)// if reached to the end of input stream
                         break;
                 }
-                return ToSuccess(current, false, results.AsReadOnly());
+                return new ParseOutput<TToken>(currentPosition, results);
             });
         }
-        public static Parser<TToken> Scope<TToken, TParsers>(TParsers resultParsers, Func<TParsers, Parser<TToken>> combinator)
+        public static Parser<TToken> Repeat<TToken>(Parser<TToken> parser, int? minRepeatCount, int? maxRepeatCount)
         {
-            return new Parser<TToken>(input =>
+            if (parser == null)
+                throw new ArgumentNullException("parser");
+            var handler = parser.parseHandler;
+            if (minRepeatCount != null && maxRepeatCount != null)
             {
-                var properties = resultParsers.AsDictionary<object>();
-                var resultsDictionary = (from p in properties where !(p.Value is Parser<TToken>) select new { Name = p.Key, Value = p.Value }).ToDictionary(i => i.Name, i => i.Value);
-                var injectedParsersDictionary = (from p in properties
-                                                 where p.Value is Parser<TToken>
-                                                 select new
-                                                 {
-                                                     Name = p.Key,
-                                                     Value = new Parser<TToken>(pInput =>
-                                                         {
-                                                             var pOutout = ((Parser<TToken>)p.Value).Run(pInput);
-                                                             if (resultsDictionary.ContainsKey(p.Key))
-                                                             {
-                                                                 var list = resultsDictionary[p.Key] as IList;
-                                                                 if (list == null)
-                                                                     list = new ArrayList();
-                                                                 list.Add(pOutout.Result);
-                                                             }
-                                                             else
-                                                                 resultsDictionary[p.Key] = pOutout.Result;
-                                                             return pOutout;
-                                                         })
-                                                 }).ToDictionary(i => i.Name, i => i.Value);
-                resultParsers.FromDictionary(injectedParsersDictionary);
-                var output = combinator(resultParsers).Run(input);
-                if (output.Success)
-                    return new ParseOutput<TToken>(output.Input, output.Position, true, resultsDictionary);
+                return new Parser<TToken>((context, position) =>
+                {
+                    var currentPosition = position;
+                    var results = new List<object>();
+                    int count = 0;
+                    for (; count < minRepeatCount; count++)
+                    {
+                        var output = handler(context, currentPosition);
+                        if (output == null)
+                            return null;
+                        results.Add(output.Result);
+                        currentPosition = output.Position;
+                    }
+                    for (; count < maxRepeatCount; count++)
+                    {
+                        var output = handler(context, currentPosition);
+                        if (output == null)
+                            return new ParseOutput<TToken>(currentPosition, results);
+                        results.Add(output.Result);
+                        currentPosition = output.Position;
+                    }
+                    return null;
+                });
+            }
+            else if (minRepeatCount != null)
+            {
+                return new Parser<TToken>((context, position) =>
+                {
+                    var currentPosition = position;
+                    var results = new List<object>();
+                    int count = 0;
+                    for (; count < minRepeatCount; count++)
+                    {
+                        var output = handler(context, currentPosition);
+                        if (output == null)
+                            return null;
+                        results.Add(output.Result);
+                        currentPosition = output.Position;
+                    }
+                    for (; true; )
+                    {
+                        var output = handler(context, currentPosition);
+                        if (output == null || Object.Equals(context.Current(currentPosition), default(TToken)))
+                            return new ParseOutput<TToken>(currentPosition, results);
+                        results.Add(output.Result);
+                        currentPosition = output.Position;
+                    }
+                });
+            }
+            else
+            {
+                return new Parser<TToken>((context, position) =>
+                {
+                    var currentPosition = position;
+                    var results = new List<object>();
+                    int count = 0;
+                    for (; count < maxRepeatCount; count++)
+                    {
+                        var output = handler(context, currentPosition);
+                        if (output == null)
+                            return new ParseOutput<TToken>(currentPosition, results);
+                        results.Add(output.Result);
+                        currentPosition = output.Position;
+                    }
+                    return null;
+                });
+            }
+        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006")]
+        public static Parser<TToken> Scope<TToken, TParsers, TOutput>(Func<Dictionary<string, object>, TParsers> resultParsers, Func<TParsers, Parser<TToken>> combinator, Func<Dictionary<string, object>, TOutput> outputProjection)
+        {
+            return new Parser<TToken>((context, position) =>
+            {
+                var dic = new Dictionary<string, object>();
+                var output = combinator(resultParsers(dic)).Run(context, position);
+
+                if (output != null)
+                    return new ParseOutput<TToken>(output.Position, outputProjection(dic));
+
                 return output;
             });
         }
-        public static Parser<TToken> Not<TToken>(Parser<TToken> parser)
+        public static Parser<TToken> ScopeParser<TToken>(Dictionary<string, object> dic, string value, Parser<TToken> parser)
         {
-            return new Parser<TToken>(input =>
+            return new Parser<TToken>((context, position) =>
             {
-                var output = parser.Run(input);
-                if (output.Success)
-                    return ToFail(input);
-                else
-                    return ToSuccess(input, false, null);
+                var output = parser.Run(context, position);
+                if (output != null)
+                    dic[value] = output.Result;
+                return output;
             });
+        }
+        public static Parser<TToken> Not<TToken>(Func<TToken, bool> condition)
+        {
+            return V.ProceedIf<TToken>(c => !condition(c));
         }
         public static Parser<TToken> DelimitedList<TToken>(Parser<TToken> listItem, Parser<TToken> delimiter, bool acceptEmptyList)
         {
-            return new Parser<TToken>(input =>
+            return new Parser<TToken>((context, position) =>
             {
-                var current = input;
+                var currentPosition = position;
                 var results = new List<object>();
                 while (true)
                 {
-                    var output = listItem.Run(current);
-                    if (!output.Success)
-                        return (results.Count == 0 && acceptEmptyList) ? ToSuccess(input, false, null) : ToFail(input);
+                    var output = listItem.Run(context, currentPosition);
+                    if (output == null)
+                    {
+                        if (results.Count == 0 && acceptEmptyList)
+                            return new ParseOutput<TToken>(position, null);
+                        else
+                            return null;
+                    }
                     results.Add(output.Result);
-                    current = new ParseInput<TToken>(output.Input, output.Position);
-                    var delimiterOutput = delimiter.Run(current);
-                    if (!delimiterOutput.Success)
+                    currentPosition = output.Position;
+                    var delimiterOutput = delimiter.Run(context, currentPosition);
+                    if (delimiterOutput == null)
                         break;
-                    current = Continue(delimiterOutput);
+                    currentPosition = delimiterOutput.Position;
                 }
-                return ToSuccess(current, false, results.AsReadOnly());
+                return new ParseOutput<TToken>(currentPosition, results);
             });
         }
     }

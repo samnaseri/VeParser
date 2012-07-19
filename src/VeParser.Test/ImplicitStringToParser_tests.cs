@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using VeParser_vNext;
+
 namespace VeParser.Test
 {
     [TestFixture]
@@ -14,7 +14,7 @@ namespace VeParser.Test
             var input = "input111";
             var parser = V.Seq<char>("input", "111");
             var output = runParser(parser, input);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
         }
 
         [Test]
@@ -25,7 +25,7 @@ namespace VeParser.Test
             var input = "input121";
             var parser = V.Seq<char>("input", "111");
             var output = runParser(parser, input);
-            Assert.False(output.Success);
+            Assert.Null(output);
         }
     }
 }

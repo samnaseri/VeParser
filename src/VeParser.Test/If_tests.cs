@@ -7,7 +7,7 @@
 namespace VeParser.Test
 {
     using NUnit.Framework;
-    using VeParser_vNext;
+
 
     public class Class
     {
@@ -21,7 +21,7 @@ namespace VeParser.Test
     }
 
     [TestFixture]
-    public class If_tests
+    public class If_tests : VeParserTests
     {
         [Test]
         public void test1()
@@ -29,21 +29,23 @@ namespace VeParser.Test
             var ws = V.ZeroOrMore<char>(" ");
             var Identitifer = V.OneOrMore<char>("a");
 
-            var classParser = V.Scope(
+            var classParser = V.Scope(store =>
                 new
                 {
-                    ElementType = "Class",
-                    ClassName = Identitifer,
-                    Members = V.ZeroOrMore(
+                    ClassName = V.ScopeParser(store, "Name", Identitifer),
+                    Members = V.ScopeParser(store, "Members", V.ZeroOrMore(
                                     V.Any(
-                                        V.Scope(new Member { Type = "Auto Property" }, p => V.Seq<char>(ws, "public", ws, Identitifer, ws, Identitifer, ws, "{", ws, "get;", ws, "set;", ws, "}")),
-                                        V.Scope(new { Type = "Field" }, p => V.Seq<char>(ws, Identitifer, ws, Identitifer, ";"))
-                                    )),
+                                        V.Seq<char>(ws, "public", ws, Identitifer, ws, Identitifer, ws, "{", ws, "get;", ws, "set;", ws, "}"),
+                                        V.Seq<char>(ws, Identitifer, ws, Identitifer, ';')
+                                    ))),
                 },
-                m => V.Seq("class", ws, m.ClassName, ws, "{", ws, m.Members, ws, "}", ws));
+                m => V.Seq("class", ws, m.ClassName, ws, "{", ws, m.Members, ws, "}", ws),
+                store => new { Type = "Class", Name = store["Name"], Members = store["Members"] }
+            );
 
             var input = "class aaaa { public aa  aa {get; set; } }";
-            var output = classParser.Run(new ParseInput<char>(new SimpleCharReader(input)));
+
+            var output = runParser(classParser, input);
 
             Assert.NotNull(output);
         }

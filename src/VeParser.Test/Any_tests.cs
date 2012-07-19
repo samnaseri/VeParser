@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using VeParser_vNext;
+
 
 namespace VeParser.Test
 {
@@ -13,7 +13,7 @@ namespace VeParser.Test
             var parser = V.Any(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
             Assert.AreEqual('1', output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(1, output.Position);
         }
         [Test]
@@ -23,7 +23,7 @@ namespace VeParser.Test
             var parser = V.Any(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
             Assert.AreEqual('2', output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(1, output.Position);
         }
         [Test]
@@ -33,7 +33,7 @@ namespace VeParser.Test
             var parser = V.Any(V.Token('1'), V.Token('2'), V.Token('3'), V.Token('4'));
             var output = runParser(parser, input);
             Assert.AreEqual('3', output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(1, output.Position);
         }
         [Test]
@@ -43,7 +43,7 @@ namespace VeParser.Test
             var parser = V.Any(V.Token('1'), V.Token('2'), V.Token('2'), V.Token('4'));
             var output = runParser(parser, input);
             Assert.AreEqual('2', output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(1, output.Position);
         }
         [Test]
@@ -52,9 +52,7 @@ namespace VeParser.Test
             var input = "3";
             var parser = V.Any(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
-            Assert.AreEqual(null, output.Result);
-            Assert.False(output.Success);
-            Assert.AreEqual(0, output.Position);
+            Assert.Null(output);
         }
         [Test]
         public void should_pass_if_any_of_expected_sequences_are_in_input_1()
@@ -63,7 +61,7 @@ namespace VeParser.Test
             var parser = V.Any(V.Seq(V.Token('c'), V.Token('d')), V.Seq(V.Token('a'), V.Token('b')));
             var output = runParser(parser, input);
             Assert.AreEqual(new[] { 'a', 'b' }, output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(2, output.Position);
         }
         [Test]
@@ -73,7 +71,7 @@ namespace VeParser.Test
             var parser = V.Any(V.Seq(V.Token('a'), V.Token('d')), V.Seq(V.Token('a'), V.Token('b')));
             var output = runParser(parser, input);
             Assert.AreEqual(new[] { 'a', 'b' }, output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(2, output.Position);
         }
         [Test]
@@ -82,9 +80,7 @@ namespace VeParser.Test
             var input = "eg";
             var parser = V.Any(V.Seq(V.Token('c'), V.Token('d')), V.Seq(V.Token('a'), V.Token('b')));
             var output = runParser(parser, input);
-            Assert.AreEqual(null, output.Result);
-            Assert.False(output.Success);
-            Assert.AreEqual(0, output.Position);
+            Assert.Null(output);
         }
     }
 }

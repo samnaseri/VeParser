@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using VeParser_vNext;
+
 
 namespace VeParser.Test
 {
@@ -16,7 +16,7 @@ namespace VeParser.Test
             var inputText = "O";
             var parser = getParserExpectingAn_O();
             var output = runParser(parser, inputText);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual('O', output.Result);
             Assert.AreEqual(1, output.Position);
         }
@@ -26,9 +26,7 @@ namespace VeParser.Test
             var inputText = "D";
             var parser = getParserExpectingAn_O();
             var output = runParser(parser, inputText);
-            Assert.False(output.Success);
-            Assert.AreEqual(null, output.Result);
-            Assert.AreEqual(0, output.Position);
+            Assert.Null(output);
         }
     }
 }

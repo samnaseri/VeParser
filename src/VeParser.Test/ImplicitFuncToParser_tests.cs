@@ -2,7 +2,7 @@
 
 using System;
 using NUnit.Framework;
-using VeParser_vNext;
+
 namespace VeParser.Test
 {
     [TestFixture]
@@ -16,7 +16,7 @@ namespace VeParser.Test
             var input = "input111";
             var parser = V.Seq(V.ZeroOrMore<char>(isletter), V.ZeroOrMore<char>(isdigit));
             var output = runParser(parser, input);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using VeParser_vNext;
+
 namespace VeParser.Test
 {
     [TestFixture]
@@ -12,7 +12,7 @@ namespace VeParser.Test
 
             var parser = V.Seq(V.ZeroOrMore(C.Letter), V.ZeroOrMore(C.Digit));
             var output = runParser(parser, input);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
         }
     }
 }

@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using VeParser_vNext;
+
 
 namespace VeParser.Test
 {
@@ -13,7 +13,7 @@ namespace VeParser.Test
             var parser = V.Seq(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
             Assert.AreEqual(new[] { '1', '2' }, output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(2, output.Position);
         }
         [Test]
@@ -22,9 +22,7 @@ namespace VeParser.Test
             var input = "21";
             var parser = V.Seq(V.Token('1'), V.Token('2'));
             var output = runParser(parser, input);
-            Assert.AreEqual(null, output.Result);
-            Assert.False(output.Success);
-            Assert.AreEqual(0, output.Position);
+            Assert.Null(output);
         }
     }
 }

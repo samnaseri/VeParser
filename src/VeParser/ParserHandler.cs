@@ -1,9 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace VeParser_vNext
+namespace VeParser
 {
-    public delegate ParseOutput<TToken> ParserHandler<TToken>(ParseInput<TToken> input);
+    public delegate ParseOutput<TToken> ParserHandler<TToken>(ParseContext<TToken> context, ushort position);
 }

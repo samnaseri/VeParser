@@ -1,7 +1,7 @@
 ﻿namespace VeParser.Test
 {
     using NUnit.Framework;
-    using VeParser_vNext;
+
 
     [TestFixture]
     public class DelimitedList_tests : VeParserTests
@@ -14,7 +14,7 @@
             var parser = V.DelimitedList(numberParser, V.Token(','), false);
             var output = runParser(parser, input);
             Assert.AreEqual(new[] { new[] { '1', '2' }, new[] { '1', '2' }, new[] { '1', '2' }, new[] { '1', '2' } }, output.Result);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
             Assert.AreEqual(input.Length, output.Position);
         }
         [Test]
@@ -24,9 +24,7 @@
             var numberParser = V.Seq(V.Token('1'), V.Token('2'));
             var parser = V.DelimitedList(numberParser, V.Token(','), false);
             var output = runParser(parser, input);
-            Assert.AreEqual(null, output.Result);
-            Assert.False(output.Success);
-            Assert.AreEqual(0, output.Position);
+            Assert.Null(output);
         }
     }
 }

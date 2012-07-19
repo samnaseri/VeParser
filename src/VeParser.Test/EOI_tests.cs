@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using VeParser_vNext;
+
 
 namespace VeParser.Test
 {
@@ -12,7 +12,7 @@ namespace VeParser.Test
             var input = "";
             var parser = V.EOI<char>();
             var output = runParser(parser, input);
-            Assert.True(output.Success);
+            Assert.NotNull(output);
         }
         [Test]
         public void should_fail_EOF_parser_on_string_with_content()
@@ -20,7 +20,7 @@ namespace VeParser.Test
             var input = "hey";
             var parser = V.EOI<char>();
             var output = runParser(parser, input);
-            Assert.False(output.Success);
+            Assert.Null(output);
         }
     }
 }

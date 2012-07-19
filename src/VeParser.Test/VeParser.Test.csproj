@@ -41,6 +41,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="VeParser, Version=1.1.0.0, Culture=neutral, PublicKeyToken=540d102faba0d901, processorArchitecture=x86">
+      <HintPath>..\VeParser\bin\Release\VeParser.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Any_tests.cs" />
@@ -56,14 +59,9 @@
     <Compile Include="Token_tests.cs" />
     <Compile Include="test helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="URLParsing_tests.cs" />
     <Compile Include="ZeorOrMore_tests.cs" />
     <Compile Include="ZeroOrOne_tests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\VeParser\VeParser.csproj">
-      <Project>{57783FD1-6405-4B8B-8356-E09E309BC281}</Project>
-      <Name>VeParser</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
