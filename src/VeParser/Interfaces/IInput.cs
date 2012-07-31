@@ -15,6 +15,6 @@ namespace VeParser
         /// </remarks>
         /// <param name="position">The desirec position.</param>
         /// <returns>The token at the desired position.</returns>
-        TToken GetTokenAtPosition(ushort position);
+        TToken GetTokenAtPosition(int position);
     }
 }

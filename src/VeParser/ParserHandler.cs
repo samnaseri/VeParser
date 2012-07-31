@@ -1,5 +1,5 @@
 
 namespace VeParser
 {
-    public delegate ParseOutput<TToken> ParserHandler<TToken>(ParseContext<TToken> context, ushort position);
+    public delegate ParseOutput<TToken> ParserHandler<TToken>(IParseContext<TToken> context, int position);
 }

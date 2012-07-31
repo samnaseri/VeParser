@@ -25,7 +25,7 @@ namespace VeParser.Test
 
             var parser =
                 ((Parser<char>)"https" | "http" | "ftp") + ':' + optional((Parser<char>)"//" | "/") +
-                plus(not(c => c == '/' || c == ':' || char.IsWhiteSpace(c))) +
+                plus(C.Except('/', ':', ' ', '\t', '\r', '\n')) +
                 star('/' + plus(C.LetterOrDigit)) + '/' + V.EOI<char>();
 
             Stopwatch watch;

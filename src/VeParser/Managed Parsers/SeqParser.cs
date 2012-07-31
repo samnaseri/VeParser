@@ -13,8 +13,7 @@ namespace VeParser
         }
         private Parser<TToken>[] GetFlattenedParsers()
         {
-            return Parsers.SelectMany(p =>
-            {
+            return Parsers.SelectMany(p => {
                 var seqParser = p as SeqParser<TToken>;
                 if (seqParser != null)
                     return seqParser.GetFlattenedParsers();
@@ -26,27 +25,23 @@ namespace VeParser
         {
             var parsersFlattened = GetFlattenedParsers();
             var handlers = parsersFlattened.Select(p => p.parseHandler).ToArray();
-            if (parsersFlattened.All(p => p is TokenParser<TToken>))
-            {
+
+            if (parsersFlattened.All(p => p is TokenParser<TToken>)) {
                 var tokens = parsersFlattened.Cast<TokenParser<TToken>>().Select(p => p.Expected).ToArray();
-                parseHandler = (context, position) =>
-                {
-                    for (ushort p = position; p < position + tokens.Length; p++)
-                    {
-                        var currentToken = context.tokens.GetTokenAtPosition(p);
+                parseHandler = (context, position) => {
+                    for (var p = position; p < position + tokens.Length; p++) {
+                        var currentToken = context.Current(p);
                         if (!Object.Equals(currentToken, tokens[p - position]) || Object.Equals(currentToken, default(TToken)))
                             return null;
                     }
-                    return new ParseOutput<TToken>((ushort)(position + tokens.Length), tokens);
+                    return new ParseOutput<TToken>(position + tokens.Length, tokens);
                 };
             }
             else
-                parseHandler = (context, position) =>
-                {
+                parseHandler = (context, position) => {
                     var currentPosition = position;
                     var results = new object[parsersFlattened.Length];
-                    for (int index = 0; index < parsersFlattened.Length; index++)
-                    {
+                    for (int index = 0; index < parsersFlattened.Length; index++) {
                         var output = handlers[index](context, currentPosition);
                         if (output == null)
                             return null;
@@ -55,15 +50,6 @@ namespace VeParser
                     }
                     return new ParseOutput<TToken>(currentPosition, results);
                 };
-        }
-        internal override BranchCondition<TToken> GetBranchCondition()
-        {
-            var parsersFlattened = GetFlattenedParsers();
-            var tokensExpectedInSequnce = parsersFlattened.TakeWhile(p => p is ManagedParser<TToken>).Cast<ManagedParser<TToken>>().Select(p => p.GetBranchCondition()).TakeWhile(i => i != null).SelectMany(i => i.ExpectedTokenSequence).ToArray();
-            if (tokensExpectedInSequnce.Length > 0)
-                return new BranchCondition<TToken> { ExpectedTokenSequence = tokensExpectedInSequnce };
-            else
-                return null;
         }
     }
 }

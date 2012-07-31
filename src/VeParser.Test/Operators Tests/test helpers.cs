@@ -8,7 +8,7 @@ namespace VeParser.Test
         protected ParseOutput<char> runParser(Parser<char> parser, string input)
         {
             var inputReader = new SimpleCharReader(input);
-            return parser.Run(new ParseContext<char>(inputReader), 0);
+            return parser.Run(new SimpleParseContext<char>(inputReader), 0);
         }
     }
 
@@ -16,16 +16,16 @@ namespace VeParser.Test
     class SimpleCharReader : IInput<char>
     {
         string input;
-        ushort length = 0;
+        int length = 0;
         char[] chars;
         public SimpleCharReader(string input)
         {
             chars = input.ToCharArray();
             chars = chars.Concat(new[] { default(char) }).ToArray();
             this.input = input;
-            this.length = (ushort)input.Length;
+            this.length = input.Length;
         }
-        public char GetTokenAtPosition(ushort position)
+        public char GetTokenAtPosition(int position)
         {
             return chars[position];
         }

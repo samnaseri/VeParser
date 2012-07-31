@@ -3,21 +3,21 @@ namespace VeParser
 {
     public class ParseOutput<TToken>
     {
-        private ushort position;
+        private int position;
         private object result;
 
-        public ParseOutput(ushort position, object result)
+        public ParseOutput(int position, object result)
         {
             this.position = position;
             this.result = result;
         }
-        public ParseOutput(ushort position)
+        public ParseOutput(int position)
         {
             this.position = position;
             this.result = null;
         }
 
-        public ushort Position
+        public int Position
         {
             get
             {

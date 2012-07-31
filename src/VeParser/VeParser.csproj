@@ -65,27 +65,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnyParser.cs" />
+    <Compile Include="Expectation.cs" />
+    <Compile Include="Managed Parsers\AnyParser.cs" />
     <Compile Include="BranchCondition.cs" />
-    <Compile Include="C.cs" />
-    <Compile Include="ManagedParser.cs" />
+    <Compile Include="Operators\C.cs" />
+    <Compile Include="Managed Parsers\ManagedParser.cs" />
     <Compile Include="ParseContext.cs" />
     <Compile Include="ParserCombinator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IInput.cs" />
+    <Compile Include="Interfaces\IInput.cs" />
     <Compile Include="ParseOutput.cs" />
     <Compile Include="Parser.cs" />
-    <Compile Include="ParserExensions.cs" />
+    <Compile Include="Operators\ParserExensions.cs" />
     <Compile Include="ParserHandler.cs" />
-    <Compile Include="SeqParser.cs" />
-    <Compile Include="TokenParser.cs" />
-    <Compile Include="V.cs" />
+    <Compile Include="Managed Parsers\SeqParser.cs" />
+    <Compile Include="Managed Parsers\TokenParser.cs" />
+    <Compile Include="Operators\V.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="RuleSets.ruleset" />
     <None Include="Ve Parser Sign Key.pfx" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

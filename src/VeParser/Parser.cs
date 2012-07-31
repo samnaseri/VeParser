@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 
 namespace VeParser
 {
@@ -10,39 +9,36 @@ namespace VeParser
         {
             this.parseHandler = parseHandler;
         }
-        public ParseOutput<TToken> Run(ParseContext<TToken> context, ushort position)
+        public ParseOutput<TToken> Run(IParseContext<TToken> context, int position)
         {
             return parseHandler(context, position);
         }
         public static implicit operator Parser<TToken>(string value)
         {
-            if (typeof(TToken) == typeof(char))
-            {
+            if (typeof(TToken) == typeof(char)) {
                 return (Parser<TToken>)(object)StringToParser(value);
             }
-            return V.ProceedIf<TToken>(token => token.ToString() == value);
+            return V.If<TToken>(token => token.ToString() == value);
         }
         private static Parser<char> StringToParser(string value)
         {
             var chars = value.ToCharArray();
-            return new Parser<char>((context, position) =>
-            {
-                for (ushort p = position; p < position + value.Length; p++)
-                {
-                    var currentChar = context.tokens.GetTokenAtPosition(p);
+            return new Parser<char>((context, position) => {
+                for (var p = position; p < position + value.Length; p++) {
+                    var currentChar = context.Current(p);
                     if (currentChar != chars[p - position] || currentChar == default(char))
                         return null;
                 }
-                return new ParseOutput<char>((ushort)(position + value.Length), value);
+                return new ParseOutput<char>(position + value.Length, value);
             });
         }
         public static implicit operator Parser<TToken>(Func<TToken, bool> tokenParser)
         {
-            return V.ProceedIf<TToken>(tokenParser);
+            return V.If<TToken>(tokenParser);
         }
         public static implicit operator Parser<TToken>(char ch)
         {
-            return (Parser<TToken>)(object)V.ProceedIf<char>(t => t == ch);
+            return (Parser<TToken>)(object)V.Token(ch);
         }
 
 
