@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace VeParser
 {
     public static class ParserExensions
     {
-        public static Parser<TToken> OnSuccess<TToken>(this Parser<TToken> parser, Action<object> onSuccess)
+        public static Parser<TToken> Then<TToken>(this Parser<TToken> parser, Action<object> onSuccess)
         {
             return new Parser<TToken>((context, position) => {
                 var output = parser.Run(context, position);
@@ -16,7 +18,7 @@ namespace VeParser
                 return output;
             });
         }
-        public static Parser<TToken> OnSuccess<TToken>(this Parser<TToken> parser, Action onSuccess)
+        public static Parser<TToken> Then<TToken>(this Parser<TToken> parser, Action onSuccess)
         {
             return new Parser<TToken>((context, position) => {
                 var output = parser.Run(context, position);
@@ -57,23 +59,61 @@ namespace VeParser
                 return output;
             });
         }
-        public static Parser<TToken> AddToList<TToken>(this Parser<TToken> parser, IList list)
+        public static Parser<TToken> AddToList<TToken>(this Parser<TToken> parser, Func<IList> list)
         {
             return new Parser<TToken>((context, position) => {
                 var output = parser.Run(context, position);
                 if (output != null) {
-                    list.Add(output.Result);
+                    list().Add(output.Result);
+                }
+                return output;
+            });
+        }
+        public static Parser<TToken> Append<TToken>(this Parser<TToken> parser, Func<StringBuilder> target)
+        {
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output != null) {
+                    target().Append(output.Result);
+                }
+                return output;
+            });
+        }
+        public static Parser<TToken> Append<TToken>(this Parser<TToken> parser, StringBuilder target)
+        {
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output != null) {
+                    target.Append(output.Result);
+                }
+                return output;
+            });
+        }
+        public static Parser<TToken> Append<TToken>(this Parser<TToken> parser, Func<StringBuilder> target, string format)
+        {
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output != null) {
+                    target().AppendFormat(format, output.Result);
+                }
+                return output;
+            });
+        }
+        public static Parser<TToken> AppendLine<TToken>(this Parser<TToken> parser, Func<StringBuilder> target)
+        {
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output != null) {
+                    target().AppendLine(output.Result.ToString());
                 }
                 return output;
             });
         }
 
-
         public static Parser<TToken> IgnoreOutput<TToken>(this Parser<TToken> parser)
         {
             return ReplaceOutput(parser, output => default(TToken));
         }
-
 
         public static Parser<TToken> Star<TToken>(this Parser<TToken> parser)
         {
@@ -93,40 +133,125 @@ namespace VeParser
         }
     }
 
-    public class CodeCharacter
+
+
+    namespace Predefined
     {
-        public CodeCharacter(int LineNumber, int ColumnNumber, char character)
+        /// <summary>
+        /// Represents a character withing a file.
+        /// </summary>
+        [System.Diagnostics.DebuggerDisplay("{Character} - {LineNumber},{ColumnNumber}")]
+        public class CodeCharacter
         {
-            this.LineNumber = LineNumber;
-            this.ColumnNumber = ColumnNumber;
-            this.Character = character;
+            public CodeCharacter(int LineNumber, int ColumnNumber, char character)
+            {
+                this.LineNumber = LineNumber;
+                this.ColumnNumber = ColumnNumber;
+                this.Character = character;
+            }
+            public int ColumnNumber { get; set; }
+            public int LineNumber { get; set; }
+            public char Character { get; set; }
         }
-        public int ColumnNumber { get; set; }
-        public int LineNumber { get; set; }
-        public char Character { get; set; }
-    }
-    public class SpecialParsers
-    {
-        public static Parser<char> GetCodeCharactersParsers()
+        [System.Diagnostics.DebuggerDisplay("{LineNumber} - {Indent} - {Characters}")]
+        public class IndentedLine
         {
-            var characters = new List<CodeCharacter>();
-            Parser<char> line, character;
-            var currentColumnNumber = 0;
-            var currentLineNumber = 0;
-            Action nextLine = () => { currentLineNumber++; currentColumnNumber = 0; };
-            Action nextColumn = () => { currentColumnNumber++; };
+            public IndentedLine()
+            {
 
-            character =
-                C.Except('\n', '\r')
-                .ReplaceOutput(ch => new CodeCharacter(currentLineNumber, currentColumnNumber - 1, (char)ch))
-                .OnSuccess(nextColumn)
-                .AddToList(characters);
+            }
+            public IndentedLine(int lineNumber, int indent, CodeCharacter[] characters)
+            {
+                this.LineNumber = lineNumber;
+                this.Indent = indent;
+                this.Characters = characters;
+            }
+            public CodeCharacter[] Characters { get; set; }
+            public int Indent { get; set; }
+            public IndentedLine Sublines { get; set; }
+            public int LineNumber { get; set; }
+        }
+        public class SpecialParsers
+        {
+            public static Parser<char> GetCodeCharactersParser()
+            {
+                var characters = new List<CodeCharacter>();
+                Parser<char> line, character;
+                var currentColumnNumber = 0;
+                var currentLineNumber = 0;
+                Action nextLine = () => { currentLineNumber++; currentColumnNumber = 0; };
+                Action nextColumn = () => { currentColumnNumber++; };
 
-            line = character.Star() + V.Any<char>("\r\n", "\n", "\r");
-            line = line.OnSuccess(nextLine);
+                character =
+                    C.Except('\n', '\r')
+                    .ReplaceOutput(ch => new CodeCharacter(currentLineNumber, currentColumnNumber - 1, (char)ch))
+                    .Then(nextColumn)
+                    .AddToList(() => characters);
 
-            var file = line.Star().ReplaceOutput(output => characters);
-            return file;
+                line = character.Star() + V.Any<char>("\r\n", "\n", "\r");
+                line = line.Then(nextLine);
+
+                var file = line.Star().ReplaceOutput(output => characters);
+                return file;
+            }
+            public static Parser<CodeCharacter> GetIndentedLinesParser()
+            {
+                var lines = new List<IndentedLine>();
+
+                Parser<CodeCharacter> file, line, indent, linecontent;
+
+                var currentLineNumber = 0;
+                var indentLength = 0;
+                var linecharacters = new List<CodeCharacter>();
+
+                Action goToNextLine = () => { currentLineNumber++; };
+                Action incrementIndentLength = () => { indentLength++; };
+                Action resetLine = () => { linecharacters = new List<CodeCharacter>(); indentLength = 0; };
+                Func<CodeCharacter, bool> stillReadingIndent = c => c.Character == ' ' && c.LineNumber == currentLineNumber;
+                Func<CodeCharacter, bool> stillReadingLineContent = c => c.LineNumber == currentLineNumber;
+                Action collectLine = () => { lines.Add(new IndentedLine(currentLineNumber, indentLength, linecharacters.ToArray())); };
+
+                indent = V.If(stillReadingIndent).Then(incrementIndentLength).Star();
+                linecontent = V.If(stillReadingLineContent).AddToList(() => linecharacters).Star();
+                line = (indent + linecontent).Then(collectLine).Then(resetLine).Then(goToNextLine);
+                file = line.Star();
+
+                return file.ReplaceOutput(old => lines);
+            }
+        }
+
+        public static class ParserExtensions
+        {
+            public static object Run(this Parser<char> parser, string input)
+            {
+                var output = parser.Run(new SimpleParseContext<char>(new GenericInput<char>(input.ToCharArray())), 0);
+                if (output != null)
+                    return output.Result;
+                return null;
+            }
+            public static object Run<TToken>(this Parser<TToken> parser, TToken[] tokens)
+            {
+                var output = parser.Run(new SimpleParseContext<TToken>(new GenericInput<TToken>(tokens)), 0);
+                if (output != null)
+                    return output.Result;
+                return null;
+            }
+        }
+
+        public class GenericInput<TToken> : IInput<TToken>
+        {
+            TToken[] tokens;
+            public GenericInput(TToken[] array)
+            {
+                var list = array.ToList();
+                list.Add(default(TToken));
+                tokens = list.ToArray();
+            }
+
+            public TToken GetTokenAtPosition(int position)
+            {
+                return tokens[position];
+            }
         }
     }
 }

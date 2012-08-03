@@ -28,20 +28,13 @@ namespace VeParser.Test
         {
             var ws = V.ZeroOrMore<char>(" ");
             var Identitifer = V.OneOrMore<char>("a");
-
-            var classParser = V.Scope(store =>
-                new
-                {
-                    ClassName = V.ScopeParser(store, "Name", Identitifer),
-                    Members = V.ScopeParser(store, "Members", V.ZeroOrMore(
+            var ClassName = Identitifer;
+            var Members = V.ZeroOrMore(
                                     V.Any(
                                         V.Seq<char>(ws, "public", ws, Identitifer, ws, Identitifer, ws, "{", ws, "get;", ws, "set;", ws, "}"),
                                         V.Seq<char>(ws, Identitifer, ws, Identitifer, ';')
-                                    ))),
-                },
-                m => V.Seq("class", ws, m.ClassName, ws, "{", ws, m.Members, ws, "}", ws),
-                store => new { Type = "Class", Name = store["Name"], Members = store["Members"] }
-            );
+                                    ));
+            var classParser = V.Seq("class", ws, ClassName, ws, "{", ws, Members, ws, "}", ws);
 
             var input = "class aaaa { public aa  aa {get; set; } }";
 

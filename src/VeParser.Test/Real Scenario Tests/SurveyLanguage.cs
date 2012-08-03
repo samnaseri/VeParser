@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
+using VeParser.Predefined;
 
 namespace VeParser.Test
 {
@@ -15,28 +15,10 @@ namespace VeParser.Test
         public int Type { get; set; }
     }
 
-    public class Line
-    {
-        public CodeCharacter[] Characters { get; set; }
-        public int Indent { get; set; }
-        public Line Sublines { get; set; }
-        public int LineNumber { get; set; }
-    }
-    public class GenericInput<TToken> : IInput<TToken>
-    {
-        TToken[] tokens;
-        public GenericInput(TToken[] array)
-        {
-            var list = array.ToList();
-            list.Add(default(TToken));
-            tokens = list.ToArray();
-        }
 
-        public TToken GetTokenAtPosition(int position)
-        {
-            return tokens[position];
-        }
-    }
+
+
+
     [TestFixture]
     public class Survey_Tests : VeParserTests
     {
@@ -46,41 +28,13 @@ namespace VeParser.Test
             var input = SampleCode1;
 
             List<CodeCharacter> characters = null;
-            {
-                var output = runParser(SpecialParsers.GetCodeCharactersParsers().GetOutput(o => { characters = (List<CodeCharacter>)o; }), SampleCode1);
-                Assert.NotNull(output);
-            }
-            var lines = new List<Line>();
-            {
-                Parser<CodeCharacter> file, line, indent, linecontent;
-                var indentLength = 0;
-                var linecharacters = new List<CodeCharacter>();
-                var currentLineNumber = 0;
-                indent = V.If<CodeCharacter>(c => c.Character == ' ' && c.LineNumber == currentLineNumber).Star();
-                indent = indent.GetOutput(c => { indentLength = ((object[])c).Length; });
-                linecontent = V.If<CodeCharacter>(c => c.LineNumber == currentLineNumber).Star();
-                linecontent = linecontent.GetOutput(c => { linecharacters.AddRange(((object[])c).Cast<CodeCharacter>()); });
-                line = (indent + linecontent).ReplaceOutput(lineInfo => {
-                    lines.Add(new Line() { LineNumber = currentLineNumber, Indent = indentLength, Characters = linecharacters.ToArray() });
-                    linecharacters = new List<CodeCharacter>();
-                    currentLineNumber++;
-                    indentLength = 0;
-                    return lineInfo;
-                });
-                file = (line + line + line + line + line + line + line);
 
-                var output = file.Run(new SimpleParseContext<CodeCharacter>(new GenericInput<CodeCharacter>(characters.ToArray())), 0);
-                Assert.NotNull(output);
-            }
+            characters = (List<CodeCharacter>)SpecialParsers.GetCodeCharactersParser().Run(SampleCode1);
+            Assert.NotNull(characters);
+
+            var lines = (List<IndentedLine>)SpecialParsers.GetIndentedLinesParser().Run(characters.ToArray());
         }
 
-        public Parser<char> GetLinesParser()
-        {
-            Parser<char> Whitespace, StringLiteral;
-            StringLiteral = '\"' + (C.Except('\"') | "\\\"").Star() + '\"';
-            Whitespace = V.Any<char>(' ', '\t');
-            return Whitespace;
-        }
         public Parser<Token> GetSurveyParser()
         {
             Parser<Token> File, InitialStatement, MiddleStatement, Include, Enum, Question, Function, Rule, Branch, AlternativeBranches, On, Indent, Identifier;

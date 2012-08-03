@@ -25,8 +25,7 @@ namespace VeParser
         public static ConditionalParserCombinator<char> Not = V.Not;
         public static Parser<char> Except(char ch)
         {
-            return new Parser<char>((context, position) =>
-            {
+            return new Parser<char>((context, position) => {
                 var currentChar = context.Current(position);
                 if (currentChar != ch)
                     return new ParseOutput<char>(position + 1, currentChar);
@@ -37,8 +36,7 @@ namespace VeParser
         public static Parser<char> Except(params char[] characters)
         {
             var exemptCharacters = new System.Collections.Generic.SortedSet<char>(characters);
-            return new Parser<char>((context, position) =>
-            {
+            return new Parser<char>((context, position) => {
                 var currentChar = context.Current(position);
                 if (!exemptCharacters.Contains(currentChar))
                     return new ParseOutput<char>(position + 1, currentChar);
@@ -48,8 +46,7 @@ namespace VeParser
         }
         public static Parser<char> Range(char from, char to)
         {
-            return new Parser<char>((context, position) =>
-            {
+            return new Parser<char>((context, position) => {
                 var currentChar = context.Current(position);
                 if (currentChar >= from && currentChar <= to)
                     return new ParseOutput<char>(position + 1, currentChar);
@@ -58,18 +55,9 @@ namespace VeParser
             });
         }
 
-        public static Parser<char> CaptureText(Parser<char> parser)
+        public static Parser<char> SkipWhitespace()
         {
-            return new Parser<char>((context, position) =>
-            {
-                var output = parser.Run(context, position);
-                if (output != null)
-                {
-                    var text = GetText(output.Result);
-                    return new ParseOutput<char>(output.Position, text);
-                }
-                return null;
-            });
+            return V.SkipWhile(V.If<char>(c => char.IsWhiteSpace(c)));
         }
 
         private static string GetText(object obj)
@@ -78,12 +66,10 @@ namespace VeParser
             if (charArray != null)
                 return new string(charArray.ToArray());
             var itemArray = obj as IEnumerable<object>;
-            if (itemArray != null)
-            {
+            if (itemArray != null) {
                 return string.Concat(itemArray.Select(i => GetText(i)));
             }
-            if (obj is char)
-            {
+            if (obj is char) {
                 return ((char)obj).ToString();
             }
             throw new Exception();

@@ -9,6 +9,8 @@ namespace VeParser
     /// </summary>
     public static class V
     {
+
+
         public static Parser<TToken> If<TToken>(Func<TToken, bool> condition)
         {
             return new Parser<TToken>((context, position) => {
@@ -165,28 +167,6 @@ namespace VeParser
                 });
             }
         }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1006")]
-        public static Parser<TToken> Scope<TToken, TParsers, TOutput>(Func<Dictionary<string, object>, TParsers> resultParsers, Func<TParsers, Parser<TToken>> combinator, Func<Dictionary<string, object>, TOutput> outputProjection)
-        {
-            return new Parser<TToken>((context, position) => {
-                var dic = new Dictionary<string, object>();
-                var output = combinator(resultParsers(dic)).Run(context, position);
-
-                if (output != null)
-                    return new ParseOutput<TToken>(output.Position, outputProjection(dic));
-
-                return output;
-            });
-        }
-        public static Parser<TToken> ScopeParser<TToken>(Dictionary<string, object> dic, string value, Parser<TToken> parser)
-        {
-            return new Parser<TToken>((context, position) => {
-                var output = parser.Run(context, position);
-                if (output != null)
-                    dic[value] = output.Result;
-                return output;
-            });
-        }
         public static Parser<TToken> Not<TToken>(Func<TToken, bool> condition)
         {
             return V.If<TToken>(c => !condition(c));
@@ -220,13 +200,13 @@ namespace VeParser
             return new LateDefinedParser<TToken>();
         }
 
-        public static Parser<TToken> Capture<TToken>(Func<object, object> captureFunc, Parser<TToken> parser)
+        public static ContextScope<TToken> StartWith<TToken>(Action initializeAction)
         {
-            return new Parser<TToken>((context, position) => {
-                var output = parser.Run(context, position);
-                output = new ParseOutput<TToken>(output.Position, captureFunc(output.Result));
-                return output;
-            });
+            return new ContextScope<TToken>(initializeAction);
+        }
+        public static StackContextScope<TStack> StartStack<TStack>(Stack<TStack> stack, Func<TStack> toPush)
+        {
+            return new StackContextScope<TStack>(stack, toPush);
         }
 
         public static Parser<TToken> TakeWhile<TToken>(Parser<TToken> condition, Parser<TToken> parser)
@@ -296,7 +276,7 @@ namespace VeParser
                     var results = new List<object>();
                     while (true) {
                         var matches = condition(context.Current(currentPosition));
-                        if (matches == null)
+                        if (matches == false)
                             break;
                         currentPosition++;
                         if (Object.Equals(context.Current(currentPosition), default(TToken)))// if reached to the end of input stream                        
@@ -365,8 +345,74 @@ namespace VeParser
             });
         }
 
+        public static Parser<TToken> Require<TToken>(Parser<TToken> parser, Action onFail)
+        {
+            // The idea is to write parsers which produce error message. So if in a situation a specific 
+            // token or pattern is expected and there is no alternative to it, this method allows to 
+            // send out an error message.
 
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output == null)
+                    onFail();
+                return output;
+            });
+        }
+        public static Parser<TToken> Require<TToken>(Parser<TToken> parser, string message)
+        {
+            return Require(parser, () => { throw new ParseException(message); });
+        }
     }
+
+    public class ContextScope<TToken>
+    {
+        Action initializationAction;
+        public ContextScope(Action initializationAction)
+        {
+            this.initializationAction = initializationAction;
+        }
+        public Parser<TToken> When(Parser<TToken> parser)
+        {
+            return new Parser<TToken>((context, position) => {
+                initializationAction();
+                var output = parser.Run(context, position);
+                return output;
+            });
+        }
+    }
+    public class StackContextScope<TStack>
+    {
+        Stack<TStack> stack;
+        Func<TStack> toPush;
+        public StackContextScope(Stack<TStack> stack, Func<TStack> toPush)
+        {
+            this.stack = stack;
+            this.toPush = toPush;
+        }
+        public Parser<TToken> When<TToken>(Parser<TToken> parser)
+        {
+            return new Parser<TToken>((context, position) => {
+                stack.Push(toPush());
+                var output = parser.Run(context, position);
+                stack.Pop();
+                return output;
+            });
+        }
+    }
+
+    public class ParseException : Exception
+    {
+        public ParseException()
+        {
+
+        }
+        public ParseException(string message)
+            : base(message)
+        {
+
+        }
+    }
+
     public class LateDefinedParser<TToken> : Parser<TToken>
     {
         Parser<TToken> definition;
