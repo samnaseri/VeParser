@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace VeParser
@@ -74,5 +75,22 @@ namespace VeParser
             }
             throw new Exception();
         }
+    }
+
+    public class Set
+    {
+        public static Set Single(char ch) { return null; }
+        public static Set Range(char fromChar, char toChar) { return null; }
+        public static Set Printable() { return null; }
+        public static Set CR() { return null; }
+        public static Set LF() { return null; }
+        public static Set Whitespace() { return null; }
+        public static Set WhitespaceButNotNewLines() { return null; }
+        public static Set Unicode(UnicodeCategory category) { return null; }
+
+        public Set Add(char ch) { return null; }
+        public Set Remove(char ch) { return null; }
+        public Set Add(Set set) { return null; }
+        public Set Remove(Set set) { return null; }
     }
 }
