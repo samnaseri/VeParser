@@ -77,20 +77,44 @@ namespace VeParser
         }
     }
 
+
     public class Set
     {
-        public static Set Single(char ch) { return null; }
-        public static Set Range(char fromChar, char toChar) { return null; }
-        public static Set Printable() { return null; }
-        public static Set CR() { return null; }
-        public static Set LF() { return null; }
-        public static Set Whitespace() { return null; }
-        public static Set WhitespaceButNotNewLines() { return null; }
-        public static Set Unicode(UnicodeCategory category) { return null; }
+        public static Set Single(char ch) { return new Set(c => c == ch); }
+        public static Set Range(char fromChar, char toChar) { return new Set(c => c >= fromChar && c <= toChar); }
+        public static Set Printable = Set.Range(' ', (char)127) + Set.Single((char)160);
+        public static Set CR = Set.Single('\r');
+        public static Set LF = Set.Single('\n');
+        public static Set Tab = Set.Single('\t');
+        public static Set Whitespace = new Set(c => char.IsWhiteSpace(c));
+        public static Set WhitespaceButNotNewLines = new Set(c => c != '\n' && c != '\r' && char.IsWhiteSpace(c));
+        public static Set Unicode(UnicodeCategory category) { return new Set(c => char.GetUnicodeCategory(c) == category); }
+
+
+        private Set(Func<char, bool> checkFunc) { this.checkFunc = checkFunc; }
+        private Func<char, bool> checkFunc;
+
+        public bool Check(char ch)
+        {
+            return this.checkFunc(ch);
+        }
 
         public Set Add(char ch) { return null; }
         public Set Remove(char ch) { return null; }
         public Set Add(Set set) { return null; }
         public Set Remove(Set set) { return null; }
+
+        public static Set operator |(Set set1, Set set2)
+        {
+            return new Set(c => set1.checkFunc(c) || set2.checkFunc(c));
+        }
+        public static Set operator -(Set set1, Set set2)
+        {
+            return new Set(c => set1.checkFunc(c) && !set2.checkFunc(c));
+        }
+        public static Parser<char> operator +(Set set1, Set set2)
+        {
+            return V.Seq(V.If(set1.checkFunc), V.If(set2.checkFunc));
+        }
     }
 }

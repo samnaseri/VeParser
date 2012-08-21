@@ -15,10 +15,6 @@ namespace VeParser.Test
         public int Type { get; set; }
     }
 
-
-
-
-
     [TestFixture]
     public class Survey_Tests : VeParserTests
     {

@@ -63,6 +63,7 @@
     <Compile Include="Operators Tests\ZeorOrMore_tests.cs" />
     <Compile Include="Operators Tests\ZeroOrOne_tests.cs" />
     <Compile Include="Real Scenario Tests\JSONParsing_Tests.cs" />
+    <Compile Include="Real Scenario Tests\Parrot.cs" />
     <Compile Include="Real Scenario Tests\SimpleCSharpParser.cs" />
     <Compile Include="Real Scenario Tests\SurveyLanguage.cs" />
   </ItemGroup>
