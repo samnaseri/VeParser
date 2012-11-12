@@ -120,14 +120,19 @@ namespace VeParser
                         results.Add(output.Result);
                         currentPosition = output.Position;
                     }
-                    for (; count < maxRepeatCount; count++) {
+                    // So far we made sure that the minimum required repeats
+                    // Now we go further to so how many more repeats are there, we do it not until maxRepeatCount but one more, so if there is more repeat then maxRepeatCount we will notice that                    
+                    for (; count <= maxRepeatCount; count++) {
                         var output = handler(context, currentPosition);
                         if (output == null)
-                            return new ParseOutput<TToken>(currentPosition, results.ToArray());
+                            break;
                         results.Add(output.Result);
                         currentPosition = output.Position;
                     }
-                    return null;
+                    if (count <= maxRepeatCount)
+                        return new ParseOutput<TToken>(currentPosition, results.ToArray());
+                    else
+                        return null;
                 });
             }
             else if (minRepeatCount != null) {
@@ -156,14 +161,17 @@ namespace VeParser
                     var currentPosition = position;
                     var results = new List<object>();
                     int count = 0;
-                    for (; count < maxRepeatCount; count++) {
+                    for (; count <= maxRepeatCount; count++) {
                         var output = handler(context, currentPosition);
                         if (output == null)
-                            return new ParseOutput<TToken>(currentPosition, results.ToArray());
+                            break;
                         results.Add(output.Result);
                         currentPosition = output.Position;
                     }
-                    return null;
+                    if (count <= maxRepeatCount)
+                        return new ParseOutput<TToken>(currentPosition, results.ToArray());
+                    else
+                        return null;
                 });
             }
         }

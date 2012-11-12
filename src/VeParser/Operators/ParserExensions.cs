@@ -49,6 +49,10 @@ namespace VeParser
                 return output;
             });
         }
+        public static Parser<char> StringfyOutput(this Parser<char> parser)
+        {
+            return ReplaceOutput(parser, o => new string(((object[])o).Cast<char>().ToArray()));
+        }
         public static Parser<TToken> GetOutput<TToken>(this Parser<TToken> parser, Action<object> outputReceiver)
         {
             return new Parser<TToken>((context, position) => {
@@ -65,6 +69,16 @@ namespace VeParser
                 var output = parser.Run(context, position);
                 if (output != null) {
                     list().Add(output.Result);
+                }
+                return output;
+            });
+        }
+        public static Parser<TToken> AddToList<TToken>(this Parser<TToken> parser, IList list)
+        {
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output != null) {
+                    list.Add(output.Result);
                 }
                 return output;
             });
@@ -131,9 +145,47 @@ namespace VeParser
         {
             return V.Repeat(parser, minRepeatCount, maxRepeatCount);
         }
+
+        // Debugging
+        public static Parser<TToken> Log<TToken>(this Parser<TToken> parser, string name)
+        {
+            return new Parser<TToken>((context, position) => {
+                var output = parser.Run(context, position);
+                if (output != null) {
+                    Console.WriteLine(string.Format("Parser {0} succeeded, position:{1} output:{2}", name, output.Position, output.Result));
+                }
+                else {
+                    Console.WriteLine("Parser " + name + " failed");
+                }
+                return output;
+            });
+        }
+
+        // Parsing Strings
+        public static ParseOutput<char> Run(this Parser<char> parser, string stringToParse)
+        {
+            return parser.Run(new SimpleParseContext<char>(new SimpleCharReader(stringToParse)), 0);
+        }
     }
 
-
+    [Serializable]
+    class SimpleCharReader : IInput<char>
+    {
+        string input;
+        int length = 0;
+        char[] chars;
+        public SimpleCharReader(string input)
+        {
+            chars = input.ToCharArray();
+            chars = chars.Concat(new[] { default(char) }).ToArray();
+            this.input = input;
+            this.length = input.Length;
+        }
+        public char GetTokenAtPosition(int position)
+        {
+            return chars[position];
+        }
+    }
 
     namespace Predefined
     {

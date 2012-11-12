@@ -25,7 +25,7 @@ namespace VeParser.Test
 
             List<CodeCharacter> characters = null;
 
-            characters = (List<CodeCharacter>)SpecialParsers.GetCodeCharactersParser().Run(SampleCode1);
+            characters = (List<CodeCharacter>)SpecialParsers.GetCodeCharactersParser().Run(SampleCode1.ToCharArray());
             Assert.NotNull(characters);
 
             var lines = (List<IndentedLine>)SpecialParsers.GetIndentedLinesParser().Run(characters.ToArray());

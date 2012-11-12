@@ -82,7 +82,7 @@ namespace VeParser
     {
         public static Set Single(char ch) { return new Set(c => c == ch); }
         public static Set Range(char fromChar, char toChar) { return new Set(c => c >= fromChar && c <= toChar); }
-        public static Set Printable = Set.Range(' ', (char)127) + Set.Single((char)160);
+        public static Set Printable = (Set)Set.Range(' ', (char)127) | (Set)Set.Single((char)160);
         public static Set CR = Set.Single('\r');
         public static Set LF = Set.Single('\n');
         public static Set Tab = Set.Single('\t');
