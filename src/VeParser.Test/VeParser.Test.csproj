@@ -49,7 +49,6 @@
     <Compile Include="Operators Tests\Any_tests.cs" />
     <Compile Include="Operators Tests\C_tests.cs" />
     <Compile Include="Operators Tests\DelimitedList_tests.cs" />
-    <Compile Include="Operators Tests\If_tests.cs" />
     <Compile Include="Operators Tests\ImplicitStringToParser_tests.cs" />
     <Compile Include="Operators Tests\ImplicitFuncToParser_tests.cs" />
     <Compile Include="Operators Tests\LocalAssignment_tests.cs" />
@@ -57,7 +56,7 @@
     <Compile Include="Operators Tests\EOI_tests.cs" />
     <Compile Include="Operators Tests\Seq_tests.cs" />
     <Compile Include="Operators Tests\Token_tests.cs" />
-    <Compile Include="Operators Tests\test helpers.cs" />
+    <Compile Include="test helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Performance Tests\URLParsing_tests.cs" />
     <Compile Include="Operators Tests\ZeorOrMore_tests.cs" />

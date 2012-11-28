@@ -9,6 +9,7 @@ namespace VeParser
     {
         public static Parser<char> Letter = (Parser<char>)char.IsLetter;
         public static Parser<char> Digit = (Parser<char>)char.IsDigit;
+        public static Parser<char> NonDigit = (Parser<char>)(c => !char.IsDigit(c));
         public static Parser<char> WhiteSpace = (Parser<char>)char.IsWhiteSpace;
         public static Parser<char> Upper = (Parser<char>)char.IsUpper;
         public static Parser<char> Lower = (Parser<char>)char.IsLower;

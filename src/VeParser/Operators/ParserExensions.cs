@@ -63,6 +63,10 @@ namespace VeParser
                 return output;
             });
         }
+        public static Parser<TToken> PickOutput<TToken>(this Parser<TToken> parser, int index)
+        {
+            return ReplaceOutput(parser, o => ((object[])o)[index]);
+        }
         public static Parser<TToken> AddToList<TToken>(this Parser<TToken> parser, Func<IList> list)
         {
             return new Parser<TToken>((context, position) => {

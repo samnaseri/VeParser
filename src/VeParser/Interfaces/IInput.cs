@@ -13,7 +13,7 @@ namespace VeParser
         /// value at the desired position.
         /// </example>
         /// </remarks>
-        /// <param name="position">The desirec position.</param>
+        /// <param name="position">The desired position.</param>
         /// <returns>The token at the desired position.</returns>
         TToken GetTokenAtPosition(int position);
     }

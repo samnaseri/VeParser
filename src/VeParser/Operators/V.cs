@@ -312,16 +312,15 @@ namespace VeParser
                 int lastPosition = position;
                 {
                     var currentPosition = position;
-                    var results = new List<object>();
-                    while (true) {
-                        var output = condition.Run(context, currentPosition);
-                        if (output != null)
-                            break;
-                        results.Add(output.Result);
-                        currentPosition = output.Position;
-                        if (Object.Equals(context.Current(currentPosition), default(TToken)))// if reached to the end of input stream                        
-                            break;
-                    }
+                    if (!Object.Equals(context.Current(currentPosition), default(TToken)))// if already at the end of input stream                        
+                        while (true) {
+                            var output = condition.Run(context, currentPosition);
+                            if (output != null)
+                                break;
+                            currentPosition++; // We can only proceed if the given parser failed, so we increase the currentPosition by 1 not the output of parser
+                            if (Object.Equals(context.Current(currentPosition), default(TToken)))// if reached to the end of input stream                        
+                                break;
+                        }
                     lastPosition = currentPosition;
                 }
                 if (lastPosition > initialPosition) {
@@ -339,13 +338,11 @@ namespace VeParser
                 throw new ArgumentNullException("condition");
             return new Parser<TToken>((context, position) => {
                 var currentPosition = position;
-                var results = new List<object>();
                 while (true) {
                     var output = condition.Run(context, currentPosition);
                     if (output != null)
                         break;
-                    results.Add(output.Result);
-                    currentPosition = output.Position;
+                    currentPosition++; // We can only proceed if the given parser failed, so we increase the currentPosition by 1 not the output of parser
                     if (Object.Equals(context.Current(currentPosition), default(TToken)))// if reached to the end of input stream                        
                         break;
                 }
